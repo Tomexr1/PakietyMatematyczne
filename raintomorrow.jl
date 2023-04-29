@@ -1,6 +1,7 @@
 using DataFrames
 using CSV
 using XGBoost
+using XGBoost: predict
 using PyCall
 using ScikitLearn
 using ScikitLearn.CrossValidation: train_test_split
@@ -65,7 +66,7 @@ mapper2 = DataFrameMapper([([:MinTemp], StandardScaler()),
 (:RainTomorrow, LabelBinarizer())]
 )
 # fit_transform!(mapper, weather_data)
-fit_transform!(mapper2, copy(weather_data))
+data_matrix = fit_transform!(mapper2, copy(weather_data))
 
 function partitionTrainTest(data, at = 0.7)
     n = nrow(data)
@@ -75,4 +76,9 @@ function partitionTrainTest(data, at = 0.7)
     data[train_idx,:], data[test_idx,:]
 end
 
-train,test = partitionTrainTest(weather_data, 0.7)
+# train,test = partitionTrainTest(weather_data, 0.7)
+X, y = data_matrix[:,1:end-1], data_matrix[:,end]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+xg_cl = xgboost((X_train, y_train), num_round=5, max_depth=6, objective="binary:logistic")
+preds = predict(xg_cl, X_test)
+acuracy = sum(round.(preds) .== y_test) / length(y_test)
