@@ -9,7 +9,7 @@ using Impute: Impute
 using Random
 # using ScikitLearn.Preprocessing: Label
 # @sk_import preprocessing: LabelEncoder
-@sk_import preprocessing: (LabelBinarizer, StandardScaler, OneHotEncoder)
+@sk_import preprocessing: (LabelBinarizer, StandardScaler)
 # @sk_import feature_extraction: DictVectorizer
 # using ScikitLearn.feature_extraction: DictVectorizer
 # using ScikitLearn: fit!
@@ -48,10 +48,10 @@ mapper2 = DataFrameMapper([([:MinTemp], StandardScaler()),
 ([:Cloud3pm], StandardScaler()),
 ([:Temp9am], StandardScaler()),
 ([:Temp3pm], StandardScaler()),
-([:WindGustDir], OneHotEncoder(sparse=false)),
+(:WindGustDir, LabelBinarizer()),
 ([:WindGustSpeed], StandardScaler()),
-([:WindDir9am], OneHotEncoder(sparse=false)),
-([:WindDir3pm], OneHotEncoder(sparse=false)),
+(:WindDir9am, LabelBinarizer()),
+(:WindDir3pm, LabelBinarizer()),
 ([:WindSpeed9am], StandardScaler()),
 ([:WindSpeed3pm], StandardScaler()),
 ([:Humidity9am], StandardScaler()),
@@ -67,14 +67,6 @@ mapper2 = DataFrameMapper([([:MinTemp], StandardScaler()),
 )
 # fit_transform!(mapper, weather_data)
 data_matrix = fit_transform!(mapper2, copy(weather_data))
-
-function partitionTrainTest(data, at = 0.7)
-    n = nrow(data)
-    idx = shuffle(1:n)
-    train_idx = view(idx, 1:floor(Int, at*n))
-    test_idx = view(idx, (floor(Int, at*n)+1):n)
-    data[train_idx,:], data[test_idx,:]
-end
 
 # train,test = partitionTrainTest(weather_data, 0.7)
 X, y = data_matrix[:,1:end-1], data_matrix[:,end]
