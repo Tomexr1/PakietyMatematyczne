@@ -9,26 +9,12 @@ using Impute: Impute
 using Random
 using Plots
 using MLBase
-@sk_import preprocessing: (LabelBinarizer, StandardScaler, OneHotEncoder)
-
+@sk_import preprocessing: (LabelBinarizer, StandardScaler)
 
 weather_data = DataFrame(CSV.File("weather.csv", normalizenames=true, delim=",", missingstring="NA"))
 unique(weather_data[!, :])
 select!(weather_data, Not("RISK_MM"))
 Impute.srs!(weather_data; rng=MersenneTwister(1234))
-# print(describe(weather_data))
-# df_dict = Dict(pairs(eachcol(weather_data)))
-
-
-# df_dict = Dict(pairs(weather_data.RainTomorrow))
-# dv = DictVectorizer()
-# df_encoded = fit_transform!(dv, df_dict)
-# df_encoded[0][0]
-
-# categorical_mask = (df.dtypes == object)
-# categorical_columns = 
-# eltype.(eachcol(weather_data))
-# mapper = DataFrameMapper([([:WindGustDir,:WindGustSpeed,:WindDir9am,:WindDir3pm,:RainToday,:RainTomorrow], LabelBinarizer()), ([:MinTemp,:MaxTemp,:Rainfall,:Evaporation,:Sunshine,:WindSpeed9am,:WindSpeed3pm,:Humidity9am,:Humidity3pm,:Pressure9am,:Pressure3pm,:Cloud9am,:Cloud3pm,:Temp9am,:Temp3pm], nothing)])
 
 mapper2 = DataFrameMapper([([:MinTemp], StandardScaler()),
 ([:MaxTemp], StandardScaler()),
@@ -45,10 +31,10 @@ mapper2 = DataFrameMapper([([:MinTemp], StandardScaler()),
 ([:Cloud3pm], StandardScaler()),
 ([:Temp9am], StandardScaler()),
 ([:Temp3pm], StandardScaler()),
-([:WindGustDir], OneHotEncoder(sparse=false)),
+(:WindGustDir, LabelBinarizer()),
 ([:WindGustSpeed], StandardScaler()),
-([:WindDir9am], OneHotEncoder(sparse=false)),
-([:WindDir3pm], OneHotEncoder(sparse=false)),
+(:WindDir9am, LabelBinarizer()),
+(:WindDir3pm, LabelBinarizer()),
 ([:WindSpeed9am], StandardScaler()),
 ([:WindSpeed3pm], StandardScaler()),
 ([:Humidity9am], StandardScaler()),
@@ -62,7 +48,8 @@ mapper2 = DataFrameMapper([([:MinTemp], StandardScaler()),
 (:RainToday, LabelBinarizer()),
 (:RainTomorrow, LabelBinarizer())]
 )
-# fit_transform!(mapper, weather_data)
+
+
 data_matrix = fit_transform!(mapper2, copy(weather_data))
 
 X, y = data_matrix[:,1:end-1], data_matrix[:,end]
