@@ -58,7 +58,7 @@ xg_cl = xgboost((X_train, y_train), num_round=5, max_depth=6, objective="binary:
 preds = predict(xg_cl, X_test)
 acuracy = sum(round.(preds) .== y_test) / length(y_test)
 
-imp = DataFrame(importancetable(bst))
+imp = DataFrame(importancetable(xg_cl))
 
 dtrain = DMatrix(X_train, label=y_train)
 boost = xgboost(dtrain, eta = 1, objective = "binary:logistic", max_depth=4, tree_method="exact")
@@ -66,5 +66,3 @@ prediction = XGBoost.predict(boost, X_test)
 prediction_rounded = Array{Int64, 1}(map(val -> round(val), prediction))
 accuracy = sum(prediction_rounded .== y_test) / length(y_test)
 MLBase.confusmat(2, Array{Int64, 1}(y_test .+ 1), Array{Int64, 1}(prediction_rounded .= 1))
-
-
