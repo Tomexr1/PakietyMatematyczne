@@ -66,3 +66,17 @@ prediction = XGBoost.predict(boost, X_test)
 prediction_rounded = Array{Int64, 1}(map(val -> round(val), prediction))
 accuracy = sum(prediction_rounded .== y_test) / length(y_test)
 MLBase.confusmat(2, Array{Int64, 1}(y_test .+ 1), Array{Int64, 1}(prediction_rounded .= 1))
+
+
+
+
+# dump_model(xg_cl, "dump.raw.txt")
+
+params = {"objective" => "binary:logistic",
+        
+        }
+
+using ScikitLearn.model_selection: cross_val_score
+
+# imp = importancereport(xg_cl)
+
